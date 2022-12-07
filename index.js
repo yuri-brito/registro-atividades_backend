@@ -7,6 +7,7 @@ import tarefaRouter from "./router/tarefa.routes.js";
 import usuarioRouter from "./router/usuario.routes.js";
 import cors from "cors";
 import dbConnect from "./config/db.config.js";
+import uploadImgRouter from "./router/uploadImg.routes.js";
 dotenv.config();
 dbConnect();
 const app = express();
@@ -17,7 +18,7 @@ app.use("/tarefa", tarefaRouter);
 // app.use("/atividade", atividadeRouter);
 // app.use("/deducao", deducaoRouter);
 app.use("/setor", setorRouter);
-
+app.use("/", uploadImgRouter);
 app.listen(Number(process.env.PORT), () => {
   console.log(`Server up and running on port ${process.env.PORT}`);
 });

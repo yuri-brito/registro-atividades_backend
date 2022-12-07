@@ -31,6 +31,9 @@ const usuarioSchema = new Schema(
       type: Schema.Types.ObjectId,
       ref: "Setor",
     },
+    profileImg: {
+      type: String,
+    },
     tarefas: [
       {
         type: Schema.Types.ObjectId,
