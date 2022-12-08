@@ -114,7 +114,12 @@ router.put(
     try {
       const { idUser, idSetor } = request.params;
 
-      const user = await UsuarioModel.findById(idUser);
+      const user = await UsuarioModel.findByIdAndUpdate(
+        idUser,
+        { setor: idSetor },
+        { runValidators: true }
+      );
+
       if (!user) {
         return response.status(404).json({ msg: "Usuário não encontrado!" });
       }
@@ -123,10 +128,10 @@ router.put(
         {
           $push: { usuarios: user._id },
         },
-        { new: true, runValidators: true }
+        { runValidators: true }
       );
 
-      return response.status(200).json(user.populate({ path: "Setor" }));
+      return response.status(200).json(user.populate({ path: "setor" }));
     } catch (error) {
       console.log(error);
       return response.status(500).json({ msg: "Erro interno no servidor!" });

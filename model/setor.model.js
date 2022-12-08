@@ -34,7 +34,7 @@ const setorSchema = new Schema(
     deducoes: [
       {
         type: Schema.Types.ObjectId,
-        ref: "Deducoes",
+        ref: "Deducao",
       },
     ],
   },
