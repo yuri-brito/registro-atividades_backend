@@ -1,7 +1,7 @@
 import express from "express";
 import * as dotenv from "dotenv";
-// import atividadeRouter from "./router/atividade.routes.js";
-// import deducaoRouter from "./router/deducao.routes.js";
+import atividadeRouter from "./router/atividade.routes.js";
+import deducaoRouter from "./router/deducao.routes.js";
 import setorRouter from "./router/setor.routes.js";
 import tarefaRouter from "./router/tarefa.routes.js";
 import usuarioRouter from "./router/usuario.routes.js";
