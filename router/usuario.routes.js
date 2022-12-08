@@ -7,12 +7,22 @@ import bcrypt from "bcrypt";
 import isAuth from "../middlewares/isAuth.js";
 import attachCurrentUser from "../middlewares/attachCurrentUser.js";
 import isAdmin from "../middlewares/isAdmin.js";
-
+import nodemailer from "nodemailer";
 const router = express.Router();
 const rounds = 10;
+
+const transporter = nodemailer.createTransport({
+  service: "Gmail",
+  auth: {
+    secure: true,
+    user: process.env.EMAIL,
+    pass: process.env.EMAIL_PASS,
+  },
+});
+
 router.post("/create", async (request, response) => {
   try {
-    const { password } = request.body;
+    const { password, email } = request.body;
     if (
       !password ||
       !password.match(
@@ -32,7 +42,15 @@ router.post("/create", async (request, response) => {
     });
 
     delete newUsuario._doc.senha;
-
+    const mailOptions = {
+      from: "yurisb85@gmail.com",
+      to: email,
+      subject: "Ativação de conta",
+      html: `<h1> Bem vindo ao nosso site.</h1>
+      <p> Por favor, confirme seu email clicando no link abaixo:</p>
+      <a href=http://localhost:8080/usuario/activate-account/${newUsuario._id}>ATIVE SUA CONTA</a>`,
+    };
+    await transporter.sendMail(mailOptions);
     return response.status(201).json(newUsuario);
   } catch (error) {
     console.log(error);
@@ -40,11 +58,32 @@ router.post("/create", async (request, response) => {
   }
 });
 
+router.get("/activate-account/:idUser", async (req, res) => {
+  try {
+    const { idUser } = req.params;
+
+    const user = await UsuarioModel.findByIdAndUpdate(idUser, {
+      confirmEmail: true,
+    });
+
+    console.log(user);
+
+    return res.send(`Sua conta foi ativada com sucesso, ${user.name}`);
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json(error.errors);
+  }
+});
 router.post("/login", async (request, response) => {
   try {
     const { email, password } = request.body;
 
     const user = await UsuarioModel.findOne({ email: email });
+    if (user.confirmEmail === false) {
+      return response
+        .status(401)
+        .json({ msg: "Usuário não confirmado. Por favor validar email." });
+    }
     if (!user) {
       return response.status(400).json({ msg: "Usuário não cadastrado" });
     }

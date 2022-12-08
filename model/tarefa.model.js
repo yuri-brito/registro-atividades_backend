@@ -21,8 +21,11 @@ const tarefaSchema = new Schema(
     horas: {
       type: Number,
     },
-    progresso: {
-      type: Number,
+    concluida: {
+      type: Boolean,
+    },
+    observacao: {
+      type: String,
     },
     validada: {
       type: Boolean,

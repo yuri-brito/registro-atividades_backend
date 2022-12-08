@@ -7,6 +7,13 @@ async function attachCurrentUser(request, response, next) {
     if (!user) {
       return response.status(400).json({ msg: "Usuário inexistente!" });
     }
+
+    if (user.confirmEmail === false) {
+      return res
+        .status(401)
+        .json({ msg: "Usuário não confirmado. Por favor validar email." });
+    }
+
     request.currentUser = user;
     next();
   } catch (error) {

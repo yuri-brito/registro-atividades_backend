@@ -34,6 +34,10 @@ const usuarioSchema = new Schema(
     profileImg: {
       type: String,
     },
+    confirmEmail: {
+      type: Boolean,
+      default: false,
+    },
     tarefas: [
       {
         type: Schema.Types.ObjectId,
