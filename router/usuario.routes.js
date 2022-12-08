@@ -48,7 +48,7 @@ router.post("/create", async (request, response) => {
       subject: "Ativação de conta",
       html: `<h1> Bem vindo ao nosso site.</h1>
       <p> Por favor, confirme seu email clicando no link abaixo:</p>
-      <a href=https://fair-pink-cockroach-cuff.cyclic.app/usuario/activate-account/${newUsuario._id}>ATIVE SUA CONTA</a>`,
+      <a href=http://localhost:8080/usuario/activate-account/${newUsuario._id}>ATIVE SUA CONTA</a>`,
     };
 
     await transporter.sendMail(mailOptions);
@@ -133,9 +133,20 @@ router.get("/all", isAuth, isAdmin, attachCurrentUser, async (req, res) => {
   }
 });
 
-router.get("/:id", async (request, response) => {
+router.get("/:id", isAuth, attachCurrentUser, async (request, response) => {
   try {
     const { id } = request.params;
+    const loggedUser = request.currentUser;
+    if (!loggedUser) {
+      return response.status(404).json({ msg: "Usuário não encontrado!" });
+    }
+    if (
+      loggedUser._id !== id &&
+      loggedUser.role !== "admin" &&
+      loggedUser.role !== "gestor"
+    ) {
+      return response.status(401).json({ msg: "Usuário não autorizado!" });
+    }
     const usuario = await UsuarioModel.findById(id)
       .populate({
         path: "tarefas",
@@ -156,31 +167,57 @@ router.get("/:id", async (request, response) => {
   }
 });
 
-router.put("/edit/:id", async (request, response) => {
-  try {
-    const { id } = request.params;
-    const update = await UsuarioModel.findByIdAndUpdate(
-      id,
-      { ...request.body },
-      { new: true, runValidators: true }
-    );
-    return response.status(200).json(update);
-  } catch (error) {
-    console.log(error);
-    return response.status(500).json({ msg: "Erro interno no servidor!" });
+router.put(
+  "/edit/:id",
+  isAuth,
+  attachCurrentUser,
+  async (request, response) => {
+    try {
+      const { id } = request.params;
+      const loggedUser = request.currentUser;
+      if (!loggedUser) {
+        return response.status(404).json({ msg: "Usuário não encontrado!" });
+      }
+      if (loggedUser._id !== id && loggedUser.role !== "admin") {
+        return response.status(401).json({ msg: "Usuário não autorizado!" });
+      }
+      const update = await UsuarioModel.findByIdAndUpdate(
+        id,
+        { ...request.body },
+        { new: true, runValidators: true }
+      );
+      return response.status(200).json(update);
+    } catch (error) {
+      console.log(error);
+      return response.status(500).json({ msg: "Erro interno no servidor!" });
+    }
   }
-});
+);
 
-router.delete("/delete/:id", async (request, response) => {
-  try {
-    const { id } = request.params;
-    const deleteUsuario = await UsuarioModel.findByIdAndDelete(id);
-    await TarefaModel.deleteMany({ setor: id });
-    return response.status(200).json(deleteUsuario);
-  } catch (error) {
-    console.log(error);
-    return response.status(500).json({ msg: "Erro interno no servidor!" });
+router.delete(
+  "/delete/:id",
+  isAuth,
+  isAdmin,
+  attachCurrentUser,
+  async (request, response) => {
+    try {
+      const { id } = request.params;
+      const deleteUsuario = await UsuarioModel.findByIdAndDelete(id);
+      await TarefaModel.deleteMany({ setor: id });
+      //retirar do array do setor
+      await SetorModel.findByIdAndUpdate(
+        deleteUsuario.setor,
+        {
+          $pull: { usuarios: deleteUsuario._id },
+        },
+        { runValidators: true }
+      );
+      return response.status(200).json(deleteUsuario);
+    } catch (error) {
+      console.log(error);
+      return response.status(500).json({ msg: "Erro interno no servidor!" });
+    }
   }
-});
+);
 
 export default router;

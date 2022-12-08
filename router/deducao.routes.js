@@ -19,9 +19,14 @@ router.get(
       if (!loggedUser) {
         return response.status(404).json({ msg: "Usuário não encontrado!" });
       }
-      const data = await DeducaoModel.find({
-        setor: loggedUser.setor,
-      }).populate("setor");
+      let data = [];
+      if (loggedUser.role === "gestor") {
+        data = await DeducaoModel.find({
+          setor: loggedUser.setor,
+        }).populate("setor");
+      } else {
+        data = await DeducaoModel.find().populate("setor");
+      }
       return response.status(200).json(data);
     } catch (error) {
       console.log(error);
@@ -44,7 +49,10 @@ router.get(
 
       const deducao = await DeducaoModel.findById(id).populate("setor");
 
-      if (loggedUser.setor !== deducao.setor._id) {
+      if (
+        loggedUser.setor !== deducao.setor._id &&
+        loggedUser.role !== "admin"
+      ) {
         return response
           .status(401)
           .json({ msg: "Dedução não pertence ao setor do usuário logado!" });
@@ -77,7 +85,10 @@ router.post(
           msg: "Setor da requisição difere do setor do gestor logado!",
         });
       }
-      const newDeducao = await DeducaoModel.create(request.body);
+      const newDeducao = await DeducaoModel.create({
+        ...request.body,
+        setor: idSetor,
+      });
       //inserir na array do setor
       await SetorModel.findByIdAndUpdate(
         idSetor,
@@ -107,7 +118,7 @@ router.put(
         return response.status(404).json({ msg: "Usuário não encontrado!" });
       }
       const deducao = await DeducaoModel.findById(id);
-      if (loggedUser.setor !== deducao.setor) {
+      if (loggedUser.setor !== deducao.setor && loggedUser.role !== "admin") {
         return response.status(401).json({
           msg: "Setor da requisição difere do setor do usuário logado!",
         });
@@ -138,7 +149,7 @@ router.delete(
         return response.status(404).json({ msg: "Usuário não encontrado!" });
       }
       const deducao = await DeducaoModel.findById(id);
-      if (loggedUser.setor !== deducao.setor) {
+      if (loggedUser.setor !== deducao.setor && loggedUser.role !== "admin") {
         return response.status(401).json({
           msg: "Setor da requisição difere do setor do usuário logado!",
         });

@@ -47,7 +47,11 @@ router.get(
       if (!loggedUser) {
         return response.status(404).json({ msg: "Usuário não encontrado!" });
       }
-      if (loggedUser.setor !== id) {
+      if (
+        loggedUser.setor !== id &&
+        loggedUser.role !== "admin" &&
+        loggedUser.role !== "gestor"
+      ) {
         return response
           .status(401)
           .json({ msg: "Setor não pertence ao usuário logado!" });
@@ -131,7 +135,9 @@ router.put(
         { runValidators: true }
       );
 
-      return response.status(200).json(user);
+      return response
+        .status(200)
+        .json({ msg: "Usuário inserido com sucesso!" });
     } catch (error) {
       console.log(error);
       return response.status(500).json({ msg: "Erro interno no servidor!" });

@@ -18,9 +18,14 @@ router.get(
       if (!loggedUser) {
         return response.status(404).json({ msg: "Usuário não encontrado!" });
       }
-      const data = await AtividadeModel.find({
-        setor: loggedUser.setor,
-      }).populate("setor");
+      let data = [];
+      if (loggedUser.role === "gestor") {
+        data = await AtividadeModel.find({
+          setor: loggedUser.setor,
+        }).populate("setor");
+      } else {
+        data = await AtividadeModel.find().populate("setor");
+      }
       return response.status(200).json(data);
     } catch (error) {
       console.log(error);
@@ -43,7 +48,10 @@ router.get(
 
       const atividade = await AtividadeModel.findById(id).populate("setor");
 
-      if (loggedUser.setor !== atividade.setor._id) {
+      if (
+        loggedUser.setor !== atividade.setor._id &&
+        loggedUser.role !== "admin"
+      ) {
         return response
           .status(401)
           .json({ msg: "Atividade não pertence ao setor do usuário logado!" });
@@ -51,7 +59,7 @@ router.get(
       if (!atividade) {
         return response.status(404).json("Atividade não foi encontrada!");
       }
-      return response.status(200).json(Atividade);
+      return response.status(200).json(atividade);
     } catch (error) {
       console.log(error);
       return response.status(500).json({ msg: "Erro interno no servidor!" });
@@ -76,7 +84,10 @@ router.post(
           msg: "Setor da requisição difere do setor do gestor logado!",
         });
       }
-      const newAtividade = await AtividadeModel.create(request.body);
+      const newAtividade = await AtividadeModel.create({
+        ...request.body,
+        setor: idSetor,
+      });
       //inserir na array do setor
       await SetorModel.findByIdAndUpdate(
         idSetor,
@@ -106,7 +117,7 @@ router.put(
         return response.status(404).json({ msg: "Usuário não encontrado!" });
       }
       const atividade = await AtividadeModel.findById(id);
-      if (loggedUser.setor !== atividade.setor) {
+      if (loggedUser.setor !== atividade.setor && loggedUser.role !== "admin") {
         return response.status(401).json({
           msg: "Setor da requisição difere do setor do usuário logado!",
         });
@@ -137,7 +148,7 @@ router.delete(
         return response.status(404).json({ msg: "Usuário não encontrado!" });
       }
       const atividade = await AtividadeModel.findById(id);
-      if (loggedUser.setor !== atividade.setor) {
+      if (loggedUser.setor !== atividade.setor && loggedUser.role !== "admin") {
         return response.status(401).json({
           msg: "Setor da requisição difere do setor do usuário logado!",
         });

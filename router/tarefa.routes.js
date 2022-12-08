@@ -16,6 +16,7 @@ router.get("/", isAuth, attachCurrentUser, async (request, response) => {
     if (!loggedUser) {
       return response.status(404).json({ msg: "Usuário não encontrado!" });
     }
+    console.log(loggedUser);
     const data = await TarefaModel.find({ usuario: loggedUser._id })
       .populate("usuario")
       .populate("atividade")
@@ -39,7 +40,7 @@ router.get("/:id", isAuth, attachCurrentUser, async (request, response) => {
         .json({ msg: "Tarefa não pertence ao usuário logado!" });
     }
     const tarefa = await TarefaModel.findById(id)
-      .populate("usuarios")
+      .populate("usuario")
       .populate("atividade")
       .populate("deducao");
     if (!tarefa) {
@@ -58,13 +59,17 @@ router.post("/create", isAuth, attachCurrentUser, async (request, response) => {
     if (!loggedUser) {
       return response.status(404).json({ msg: "Usuário não encontrado!" });
     }
-    const newTarefa = await TarefaModel.create(request.body);
+
+    const newTarefa = await TarefaModel.create({
+      ...request.body,
+      usuario: loggedUser._id,
+    });
     await UsuarioModel.findByIdAndUpdate(
-      request.body.usuario,
+      loggedUser._id,
       {
         $push: { tarefas: newTarefa._id },
       },
-      { new: true, runValidators: true }
+      { runValidators: true }
     );
 
     return response.status(201).json(newTarefa);
