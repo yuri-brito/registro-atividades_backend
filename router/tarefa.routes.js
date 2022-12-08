@@ -10,8 +10,8 @@ router.get("/", async (request, response) => {
   try {
     const data = await TarefaModel.find()
       .populate("usuario")
-      .populate("atividades")
-      .populate("deducoes");
+      .populate("atividade")
+      .populate("deducao");
     return response.status(200).json(data);
   } catch (error) {
     console.log(error);
@@ -23,8 +23,8 @@ router.get("/:id", async (request, response) => {
     const { id } = request.params;
     const processo = await TarefaModel.findById(id)
       .populate("usuarios")
-      .populate("atividades")
-      .populate("deducoes");
+      .populate("atividade")
+      .populate("deducao");
     if (!processo) {
       return response.status(404).json("Usuário não foi encontrado!");
     }
