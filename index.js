@@ -15,8 +15,8 @@ app.use(cors({ origin: process.env.REACT_URL }));
 app.use(express.json());
 app.use("/usuario", usuarioRouter);
 app.use("/tarefa", tarefaRouter);
-// app.use("/atividade", atividadeRouter);
-// app.use("/deducao", deducaoRouter);
+app.use("/atividade", atividadeRouter);
+app.use("/deducao", deducaoRouter);
 app.use("/setor", setorRouter);
 app.use("/", uploadImgRouter);
 app.listen(Number(process.env.PORT), () => {
