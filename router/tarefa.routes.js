@@ -10,8 +10,6 @@ router.get("/", async (request, response) => {
   try {
     const data = await TarefaModel.find()
       .populate("usuario")
-      .populate("chefe")
-      .populate("substituto")
       .populate("atividades")
       .populate("deducoes");
     return response.status(200).json(data);
@@ -25,8 +23,6 @@ router.get("/:id", async (request, response) => {
     const { id } = request.params;
     const processo = await TarefaModel.findById(id)
       .populate("usuarios")
-      .populate("chefe")
-      .populate("substituto")
       .populate("atividades")
       .populate("deducoes");
     if (!processo) {
