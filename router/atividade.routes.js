@@ -60,22 +60,31 @@ router.get(
 );
 
 router.post(
-  "/create",
+  "/create/:idSetor",
   isAuth,
   isGestor,
   attachCurrentUser,
   async (request, response) => {
     try {
+      const { idSetor } = request.params;
       const loggedUser = request.currentUser;
       if (!loggedUser) {
         return response.status(404).json({ msg: "Usuário não encontrado!" });
       }
-      if (loggedUser.setor !== request.body.setor) {
+      if (loggedUser.role === "gestor" && loggedUser.setor !== idSetor) {
         return response.status(401).json({
-          msg: "Setor da requisição difere do setor do usuário logado!",
+          msg: "Setor da requisição difere do setor do gestor logado!",
         });
       }
       const newAtividade = await AtividadeModel.create(request.body);
+      //inserir na array do setor
+      await SetorModel.findByIdAndUpdate(
+        idSetor,
+        {
+          $push: { atividades: newAtividade._id },
+        },
+        { new: true, runValidators: true }
+      );
       return response.status(201).json(newAtividade);
     } catch (error) {
       console.log(error);

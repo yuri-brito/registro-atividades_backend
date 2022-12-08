@@ -6,6 +6,7 @@ import attachCurrentUser from "../middlewares/attachCurrentUser.js";
 import isAdmin from "../middlewares/isAdmin.js";
 import isGestor from "../middlewares/isGestor.js";
 import isAuth from "../middlewares/isAuth.js";
+import UsuarioModel from "../model/usuario.model.js";
 
 const router = express.Router();
 
@@ -98,6 +99,34 @@ router.put(
         { new: true, runValidators: true }
       );
       return response.status(200).json(update);
+    } catch (error) {
+      console.log(error);
+      return response.status(500).json({ msg: "Erro interno no servidor!" });
+    }
+  }
+);
+router.put(
+  "/insertUser/:idUser/:idSetor",
+  isAuth,
+  isGestor,
+  attachCurrentUser,
+  async (request, response) => {
+    try {
+      const { idUser, idSetor } = request.params;
+
+      const user = await UsuarioModel.findById(idUser);
+      if (!user) {
+        return response.status(404).json({ msg: "Usuário não encontrado!" });
+      }
+      await SetorModel.findByIdAndUpdate(
+        idSetor,
+        {
+          $push: { usuarios: user._id },
+        },
+        { new: true, runValidators: true }
+      );
+
+      return response.status(200).json(user.populate({ path: "Setor" }));
     } catch (error) {
       console.log(error);
       return response.status(500).json({ msg: "Erro interno no servidor!" });
