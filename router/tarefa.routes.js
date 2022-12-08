@@ -9,7 +9,7 @@ const router = express.Router();
 router.get("/", async (request, response) => {
   try {
     const data = await TarefaModel.find()
-      .populate("usuarios")
+      .populate("usuario")
       .populate("chefe")
       .populate("substituto")
       .populate("atividades")
