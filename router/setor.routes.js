@@ -131,7 +131,7 @@ router.put(
         { runValidators: true }
       );
 
-      return response.status(200).json(user.populate("setor"));
+      return response.status(200).json(user);
     } catch (error) {
       console.log(error);
       return response.status(500).json({ msg: "Erro interno no servidor!" });
