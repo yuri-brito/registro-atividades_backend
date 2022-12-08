@@ -35,7 +35,7 @@ router.post("/create", async (request, response) => {
     }
     const saltString = await bcrypt.genSalt(rounds);
     const hashPassword = await bcrypt.hash(password, saltString);
-    console.log(hashPassword);
+    console.log(request.body, "<-request.body");
     const newUsuario = await UsuarioModel.create({
       ...request.body,
       senhaHash: hashPassword,
