@@ -35,12 +35,12 @@ router.post("/create", async (request, response) => {
     }
     const saltString = await bcrypt.genSalt(rounds);
     const hashPassword = await bcrypt.hash(password, saltString);
-
+    console.log(hashPassword);
     const newUsuario = await UsuarioModel.create({
       ...request.body,
       senhaHash: hashPassword,
     });
-
+    console.log(newUsuario);
     delete newUsuario._doc.senha;
     const mailOptions = {
       from: "yurisb85@gmail.com",
@@ -50,6 +50,7 @@ router.post("/create", async (request, response) => {
       <p> Por favor, confirme seu email clicando no link abaixo:</p>
       <a href=http://localhost:8080/usuario/activate-account/${newUsuario._id}>ATIVE SUA CONTA</a>`,
     };
+    console.log(mailOptions);
     await transporter.sendMail(mailOptions);
     return response.status(201).json(newUsuario);
   } catch (error) {
