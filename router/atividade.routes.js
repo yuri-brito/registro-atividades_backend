@@ -4,7 +4,7 @@ import AtividadeModel from "../model/atividade.model.js";
 import attachCurrentUser from "../middlewares/attachCurrentUser.js";
 import isAdmin from "../middlewares/isAdmin.js";
 import isGestor from "../middlewares/isGestor.js";
-
+import isAuth from "../middlewares/isAuth.js";
 const router = express.Router();
 
 router.get(
