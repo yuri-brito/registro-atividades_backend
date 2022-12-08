@@ -1,4 +1,4 @@
-import express from "express";
+import express, { application } from "express";
 import SetorModel from "../model/setor.model.js";
 import UsuarioModel from "../model/usuario.model.js";
 import TarefaModel from "../model/tarefa.model.js";
@@ -35,12 +35,12 @@ router.post("/create", async (request, response) => {
     }
     const saltString = await bcrypt.genSalt(rounds);
     const hashPassword = await bcrypt.hash(password, saltString);
-    console.log(request.body, "<-request.body");
+
     const newUsuario = await UsuarioModel.create({
       ...request.body,
       senhaHash: hashPassword,
     });
-    console.log(newUsuario);
+
     delete newUsuario._doc.senha;
     const mailOptions = {
       from: "yurisb85@gmail.com",
@@ -48,9 +48,9 @@ router.post("/create", async (request, response) => {
       subject: "Ativação de conta",
       html: `<h1> Bem vindo ao nosso site.</h1>
       <p> Por favor, confirme seu email clicando no link abaixo:</p>
-      <a href=http://localhost:8080/usuario/activate-account/${newUsuario._id}>ATIVE SUA CONTA</a>`,
+      <a href=https://fair-pink-cockroach-cuff.cyclic.app/usuario/activate-account/${newUsuario._id}>ATIVE SUA CONTA</a>`,
     };
-    console.log(mailOptions);
+
     await transporter.sendMail(mailOptions);
     return response.status(201).json(newUsuario);
   } catch (error) {
